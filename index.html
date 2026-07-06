@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Manager</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ════════════════════════════════════════════════════════
+       CSS CUSTOM PROPERTIES — Design Tokens
+       ════════════════════════════════════════════════════════ */
+
+    :root {
+      /* ── Modo Claro (Verde claro, blanco y negro) ─────── */
+      --bg-primary: #f5fdf7;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f0faf2;
+      --bg-hover: #e8f7ed;
+      --bg-modal-overlay: rgba(12, 25, 16, 0.4);
+
+      --text-primary: #0b1a0f;
+      --text-secondary: #27402f;
+      --text-tertiary: #6b8d75;
+      --text-inverse: #ffffff;
+
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+      --accent-light: #dcfce7;
+      --accent-glow: rgba(34, 197, 94, 0.25);
+
+      --success: #16a34a;
+      --success-light: rgba(22, 163, 74, 0.1);
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --danger-light: rgba(220, 38, 38, 0.08);
+      --warning: #ca8a04;
+      --warning-light: rgba(202, 138, 4, 0.1);
+
+      --border: #d1fae5;
+      --border-focus: var(--accent);
+
+      --shadow-sm: 0 1px 3px rgba(12, 25, 16, 0.05), 0 1px 2px rgba(12, 25, 16, 0.03);
+      --shadow-md: 0 4px 12px rgba(12, 25, 16, 0.06), 0 2px 4px rgba(12, 25, 16, 0.03);
+      --shadow-lg: 0 12px 40px rgba(12, 25, 16, 0.1), 0 4px 12px rgba(12, 25, 16, 0.05);
+      --shadow-xl: 0 24px 60px rgba(12, 25, 16, 0.15);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+      --toast-bg: #1a2e20;
+      --toast-color: #f0fdf4;
+
+      --tag-bg: var(--accent-light);
+      --tag-color: var(--accent-hover);
+      --tag-border: rgba(34, 197, 94, 0.2);
+
+      --scrollbar-thumb: #a7f3d0;
+      --scrollbar-track: transparent;
+    }
+
+    /* ── Modo Oscuro (Verde pino y bosque profundo) ────────────────── */
+    [data-theme="dark"] {
+      --bg-primary: #06100a;
+      --bg-secondary: #0a1c12;
+      --bg-card: #0f2619;
+      --bg-input: #163322;
+      --bg-hover: #1e462f;
+      --bg-modal-overlay: rgba(3, 10, 6, 0.8);
+
+      --text-primary: #ecfdf5;
+      --text-secondary: #a7f3d0;
+      --text-tertiary: #529267;
+      --text-inverse: #06100a;
+
+      --accent: #4ade80;
+      --accent-hover: #22c55e;
+      --accent-light: rgba(74, 222, 128, 0.08);
+      --accent-glow: rgba(74, 222, 128, 0.25);
+
+      --success: #4ade80;
+      --success-light: rgba(74, 222, 128, 0.15);
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --danger-light: rgba(248, 113, 113, 0.1);
+      --warning: #facc15;
+      --warning-light: rgba(250, 204, 21, 0.1);
+
+      --border: #1b4028;
+      --border-focus: var(--accent);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 4px 12px rgba(3, 10, 6, 0.6);
+      --shadow-lg: 0 12px 40px rgba(3, 10, 6, 0.7);
+      --shadow-xl: 0 24px 60px rgba(3, 10, 6, 0.8);
+
+      --toast-bg: #0f2619;
+      --toast-color: #ecfdf5;
+
+      --tag-bg: rgba(74, 222, 128, 0.12);
+      --tag-color: #4ade80;
+      --tag-border: rgba(74, 222, 128, 0.2);
+
+      --scrollbar-thumb: #1b4028;
+      --scrollbar-track: transparent;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       RESET & BASE
+       ════════════════════════════════════════════════════════ */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: var(--radius-full);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       LAYOUT
+       ════════════════════════════════════════════════════════ */
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 28px 80px;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--text-primary));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: rotate(-8deg) scale(1.05);
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Theme Toggle ────────────────────────────────────── */
+
+    .theme-toggle {
+      position: relative;
+      width: 56px;
+      height: 30px;
+      border-radius: var(--radius-full);
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+
+    .theme-toggle-knob {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+        background var(--transition);
+      box-shadow: 0 2px 6px var(--accent-glow);
+    }
+
+    [data-theme="dark"] .theme-toggle-knob {
+      transform: translateX(24px);
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────── */
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 16px 11px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition),
+        background var(--transition);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .filter-select {
+      padding: 11px 36px 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa0a6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      transition: border-color var(--transition), background var(--transition),
+        color var(--transition);
+      min-width: 170px;
+    }
+
+    .filter-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 22px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 16px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 13px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon:hover {
+      background: var(--bg-hover);
+      color: var(--accent);
+    }
+
+    .btn-icon.danger:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    /* ── Stats Bar ───────────────────────────────────────── */
+
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 150px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all var(--transition);
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .stat-icon.blue {
+      background: var(--accent-light);
+    }
+
+    .stat-icon.green {
+      background: var(--success-light);
+    }
+
+    .stat-icon.orange {
+      background: var(--warning-light);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Table ───────────────────────────────────────────── */
+
+    .table-container {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--bg-input);
+    }
+
+    th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1.5px solid var(--border);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    td {
+      padding: 14px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      transition: background var(--transition);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background var(--transition);
+    }
+
+    tbody tr:hover {
+      background: var(--bg-hover);
+    }
+
+    /* ── Separated Categories Grid ──────────────────────── */
+    .categories-prompts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .category-block {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
+    }
+
+    .category-block:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .category-block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .category-block-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-block-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .category-block-count {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--tag-border);
+    }
+
+    .category-block-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Tarjeta de Prompt Individual dentro del bloque */
+    .prompt-item-card {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all var(--transition);
+    }
+
+    .prompt-item-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-hover);
+    }
+
+    .prompt-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .prompt-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .prompt-item-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.5;
+    }
+
+    .prompt-item-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+
+    /* ── Empty State ─────────────────────────────────────── */
+
+    .empty-state {
+      text-align: center;
+      padding: 70px 30px;
+    }
+
+    .empty-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .empty-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Loading Spinner ─────────────────────────────────── */
+
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── Modal ───────────────────────────────────────────── */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-modal-overlay);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 0;
+      width: 580px;
+      max-width: 94vw;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-xl);
+      transform: translateY(20px) scale(0.96);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        background var(--transition), border-color var(--transition);
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px 0;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 24px 28px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 0 28px 24px;
+    }
+
+    /* ── Form ────────────────────────────────────────────── */
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition),
+        background var(--transition);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa0a6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    /* ── Confirm Modal ───────────────────────────────────── */
+
+    .confirm-body {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .confirm-icon {
+      font-size: 48px;
+      margin-bottom: 14px;
+    }
+
+    .confirm-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .confirm-text strong {
+      color: var(--text-primary);
+    }
+
+    /* ── Toast ───────────────────────────────────────────── */
+
+    .toast-container {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--toast-bg);
+      color: var(--toast-color);
+      padding: 14px 22px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        toastOut 0.35s 2.8s ease forwards;
+      max-width: 380px;
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .toast.info {
+      border-left: 4px solid var(--accent);
+    }
+
+    @keyframes toastIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes toastOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    /* ── View Modal (Prompt detail) ──────────────────────── */
+
+    .detail-section {
+      margin-bottom: 20px;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--bg-input);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Responsive ──────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+      .app {
+        padding: 12px 10px 60px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px 18px;
+        text-align: center;
+      }
+
+      .header-left {
+        flex-direction: column;
+      }
+
+      .toolbar {
+        flex-direction: column;
+      }
+
+      .search-wrapper {
+        width: 100%;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+
+      .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .stats-bar {
+        flex-direction: column;
+      }
+
+      .stat-card {
+        min-width: auto;
+      }
+
+      .modal {
+        max-width: 98vw;
+        margin: 8px;
+      }
+
+      .col-prompt,
+      .col-ejemplos {
+        min-width: 180px;
+      }
+    }
+
+    /* ── Fade-in animation ───────────────────────────────── */
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.45s ease both;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app">
+
+    <!-- ═══════ HEADER ═══════════════════════════════════ -->
+    <header class="header fade-in">
+      <div class="header-left">
+        <div class="logo" aria-hidden="true">⚡</div>
+        <div>
+          <div class="header-title">Prompt Manager</div>
+          <div class="header-subtitle">Administración de prompts — ABM</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Alternar modo oscuro" tabindex="0">
+          <div class="theme-toggle-knob" id="themeKnob">🌙</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════ STATS BAR ════════════════════════════════ -->
+    <div class="stats-bar fade-in" style="animation-delay:0.05s">
+      <div class="stat-card">
+        <div class="stat-icon blue">📋</div>
+        <div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">Total prompts</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">📁</div>
+        <div>
+          <div class="stat-value" id="statCategories">—</div>
+          <div class="stat-label">Categorías</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">🔍</div>
+        <div>
+          <div class="stat-value" id="statFiltered">—</div>
+          <div class="stat-label">Mostrando</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ TOOLBAR ══════════════════════════════════ -->
+    <div class="toolbar fade-in" style="animation-delay:0.1s">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput"
+          placeholder="Buscar prompts por nombre, categoría o contenido…" />
+      </div>
+      <button class="btn btn-primary" id="btnNew" title="Crear nuevo prompt">
+        ＋ Nuevo Prompt
+      </button>
+    </div>
+
+    <!-- ═══════ SEPARATED CATEGORIES GRID ════════════════ -->
+    <div class="fade-in" style="animation-delay:0.15s">
+      <div id="categoriesPromptsContainer" class="categories-prompts-container">
+        <!-- Rendered dynamically by JS -->
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="empty-icon">📝</div>
+        <div class="empty-title">No se encontraron prompts</div>
+        <div class="empty-desc">Crea tu primer prompt o ajusta los filtros de búsqueda.</div>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          ＋ Crear Prompt
+        </button>
+      </div>
+      <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Cargando prompts…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MODAL: CREAR / EDITAR ════════════════════ -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="formModalTitle">Nuevo Prompt</div>
+        <button class="btn-icon" onclick="closeFormModal()" title="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="formId" />
+
+        <div class="form-group">
+          <label class="form-label" for="formCategoria">Categoría</label>
+          <input type="text" class="form-input" id="formCategoria" placeholder="Ej: Marketing, Desarrollo, Educación…"
+            list="categorySuggestions" />
+          <datalist id="categorySuggestions"></datalist>
+          <div class="form-hint">Escribe una nueva o selecciona una existente.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="formNombre">Nombre del Prompt</label>
+          <input type="text" class="form-input" id="formNombre" placeholder="Ej: Generador de ideas para blog" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="formPrompt">Prompt</label>
+          <textarea class="form-textarea" id="formPrompt" rows="5"
+            placeholder="Escribe el prompt completo aquí…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="formEjemplos">Ejemplos</label>
+          <textarea class="form-textarea" id="formEjemplos" rows="3"
+            placeholder="Agrega ejemplos de uso del prompt…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeFormModal()">Cancelar</button>
+        <button class="btn btn-primary" id="btnSave" onclick="savePrompt()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MODAL: CONFIRMAR ELIMINACIÓN ═════════════ -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal" style="width: 420px;">
+      <div class="modal-header">
+        <div class="modal-title">Confirmar Eliminación</div>
+        <button class="btn-icon" onclick="closeConfirmModal()" title="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-body">
+          <div class="confirm-icon">⚠️</div>
+          <div class="confirm-text">
+            ¿Estás seguro de que quieres eliminar<br />
+            <strong id="confirmName"></strong>?<br />
+            Esta acción no se puede deshacer.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MODAL: VER DETALLE ═══════════════════════ -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="viewModalTitle">Detalle del Prompt</div>
+        <button class="btn-icon" onclick="closeViewModal()" title="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <div class="detail-label">Categoría</div>
+          <div class="detail-value" id="viewCategoria"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Nombre</div>
+          <div class="detail-value" id="viewNombre"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Prompt</div>
+          <div class="detail-value" id="viewPrompt"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Ejemplos</div>
+          <div class="detail-value" id="viewEjemplos"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeViewModal()">Cerrar</button>
+        <button class="btn btn-primary" id="btnEditFromView" onclick="">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ TOAST CONTAINER ══════════════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       JAVASCRIPT — APPLICATION LOGIC
+       ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── State ──────────────────────────────────────────────
+    let allPrompts = [];
+    let categories = [];
+    let deleteTargetId = null;
+    let deleteTargetName = "";
+
+    // ── DOM References ─────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+
+    const dom = {
+      categoriesPromptsContainer: $("categoriesPromptsContainer"),
+      emptyState: $("emptyState"),
+      loadingState: $("loadingState"),
+      searchInput: $("searchInput"),
+      btnNew: $("btnNew"),
+      formModal: $("formModal"),
+      formModalTitle: $("formModalTitle"),
+      formId: $("formId"),
+      formCategoria: $("formCategoria"),
+      formNombre: $("formNombre"),
+      formPrompt: $("formPrompt"),
+      formEjemplos: $("formEjemplos"),
+      btnSave: $("btnSave"),
+      confirmModal: $("confirmModal"),
+      confirmName: $("confirmName"),
+      viewModal: $("viewModal"),
+      viewModalTitle: $("viewModalTitle"),
+      viewCategoria: $("viewCategoria"),
+      viewNombre: $("viewNombre"),
+      viewPrompt: $("viewPrompt"),
+      viewEjemplos: $("viewEjemplos"),
+      btnEditFromView: $("btnEditFromView"),
+      statTotal: $("statTotal"),
+      statCategories: $("statCategories"),
+      statFiltered: $("statFiltered"),
+      categorySugg: $("categorySuggestions"),
+      toastContainer: $("toastContainer"),
+      themeToggle: $("themeToggle"),
+      themeKnob: $("themeKnob")
+    };
+
+    // ══════════════════════════════════════════════════════
+    // THEME TOGGLE
+    // ══════════════════════════════════════════════════════
+
+    function initTheme() {
+      const saved = localStorage.getItem("pm-theme");
+      if (saved === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        dom.themeKnob.textContent = "☀️";
+      }
+    }
+
+    function toggleTheme() {
+      const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+        dom.themeKnob.textContent = "🌙";
+        localStorage.setItem("pm-theme", "light");
+      } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+        dom.themeKnob.textContent = "☀️";
+        localStorage.setItem("pm-theme", "dark");
+      }
+    }
+
+    dom.themeToggle.addEventListener("click", toggleTheme);
+    dom.themeToggle.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+
+    // ══════════════════════════════════════════════════════
+    // DATA — Fetch from Google Apps Script
+    // ══════════════════════════════════════════════════════
+
+    function loadData() {
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function (data) {
+          allPrompts = data || [];
+          updateCategories();
+          renderGrid();
+          showLoading(false);
+        })
+        .withFailureHandler(function (err) {
+          showLoading(false);
+          toast("Error al cargar datos: " + err.message, "error");
+        })
+        .getPrompts();
+    }
+
+    function updateCategories() {
+      const cats = [...new Set(allPrompts.map((p) => p.categoria).filter(Boolean))].sort();
+      categories = cats;
+
+      // Datalist para el formulario (autocompletado)
+      dom.categorySugg.innerHTML = "";
+      cats.forEach(function (cat) {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        dom.categorySugg.appendChild(opt);
+      });
+
+      // Stats
+      dom.statTotal.textContent = allPrompts.length;
+      dom.statCategories.textContent = cats.length;
+    }
+
+    // ══════════════════════════════════════════════════════
+    // RENDER SEPARATED CATEGORIES GRID
+    // ══════════════════════════════════════════════════════
+
+    function renderGrid() {
+      const query = dom.searchInput.value.toLowerCase().trim();
+      
+      // Filtrar todos los prompts basados en la búsqueda
+      const filtered = allPrompts.filter(function (p) {
+        return !query ||
+          (p.categoria || "").toLowerCase().includes(query) ||
+          (p.nombre || "").toLowerCase().includes(query) ||
+          (p.prompt || "").toLowerCase().includes(query) ||
+          (p.ejemplos || "").toLowerCase().includes(query);
+      });
+
+      dom.statFiltered.textContent = filtered.length;
+
+      if (allPrompts.length === 0) {
+        dom.categoriesPromptsContainer.innerHTML = "";
+        dom.emptyState.style.display = "block";
+        return;
+      }
+
+      if (filtered.length === 0) {
+        dom.categoriesPromptsContainer.innerHTML = "";
+        dom.emptyState.style.display = "block";
+        return;
+      }
+
+      dom.emptyState.style.display = "none";
+
+      // Agrupar los prompts por categoría
+      const grouped = filtered.reduce(function (acc, p) {
+        const cat = p.categoria || "General";
+        if (!acc[cat]) {
+          acc[cat] = [];
+        }
+        acc[cat].push(p);
+        return acc;
+      }, {});
+
+      const sortedCategories = Object.keys(grouped).sort();
+
+      // Asignar iconos amigables según la categoría
+      const getCategoryIcon = function (cat) {
+        const c = cat.toLowerCase();
+        if (c.includes("market") || c.includes("venta") || c.includes("social")) return "📢";
+        if (c.includes("dev") || c.includes("program") || c.includes("desarrollo") || c.includes("codig")) return "💻";
+        if (c.includes("escrib") || c.includes("redac") || c.includes("copi") || c.includes("texto")) return "✍️";
+        if (c.includes("prod") || c.includes("organiz") || c.includes("reun")) return "⚡";
+        if (c.includes("educa") || c.includes("aprend") || c.includes("estud")) return "🎓";
+        if (c.includes("diseñ") || c.includes("crea") || c.includes("art")) return "🎨";
+        return "📁"; // Icono por defecto
+      };
+
+      dom.categoriesPromptsContainer.innerHTML = sortedCategories.map(function (cat) {
+        const prompts = grouped[cat];
+        const icon = getCategoryIcon(cat);
+
+        const promptCardsHtml = prompts.map(function (p) {
+          return (
+            '<div class="prompt-item-card">' +
+              '<div class="prompt-item-header">' +
+                '<div class="prompt-item-name">' + escHtml(p.nombre) + '</div>' +
+              '</div>' +
+              '<div class="prompt-item-text">' + escHtml(p.prompt) + '</div>' +
+              '<div class="prompt-item-actions">' +
+                '<button class="btn-icon" onclick="viewPrompt(' + p.id + ')" title="Ver detalle">👁️</button>' +
+                '<button class="btn-icon" onclick="editPrompt(' + p.id + ')" title="Editar">✏️</button>' +
+                '<button class="btn-icon danger" onclick="requestDelete(' + p.id + ',\'' + escAttr(p.nombre) + '\')" title="Eliminar">🗑️</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join("");
+
+        return (
+          '<div class="category-block">' +
+            '<div class="category-block-header">' +
+              '<div class="category-block-title-wrapper">' +
+                '<span style="font-size: 20px;">' + icon + '</span>' +
+                '<div class="category-block-title">' + escHtml(cat) + '</div>' +
+              '</div>' +
+              '<span class="category-block-count">' + prompts.length + '</span>' +
+            '</div>' +
+            '<div class="category-block-body">' +
+              promptCardsHtml +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    // ══════════════════════════════════════════════════════
+    // CREATE / EDIT — Modal
+    // ══════════════════════════════════════════════════════
+
+    function openCreateModal() {
+      dom.formId.value = "";
+      dom.formCategoria.value = "";
+      dom.formNombre.value = "";
+      dom.formPrompt.value = "";
+      dom.formEjemplos.value = "";
+      dom.formModalTitle.textContent = "Nuevo Prompt";
+      dom.btnSave.textContent = "Guardar";
+      dom.formModal.classList.add("active");
+      dom.formCategoria.focus();
+    }
+
+    function editPrompt(id) {
+      closeViewModal();
+      const p = allPrompts.find(function (x) { return x.id === id; });
+      if (!p) return;
+
+      dom.formId.value = p.id;
+      dom.formCategoria.value = p.categoria;
+      dom.formNombre.value = p.nombre;
+      dom.formPrompt.value = p.prompt;
+      dom.formEjemplos.value = p.ejemplos;
+      dom.formModalTitle.textContent = "Editar Prompt";
+      dom.btnSave.textContent = "Actualizar";
+      dom.formModal.classList.add("active");
+      dom.formCategoria.focus();
+    }
+
+    function closeFormModal() {
+      dom.formModal.classList.remove("active");
+    }
+
+    function savePrompt() {
+      const data = {
+        categoria: dom.formCategoria.value.trim(),
+        nombre: dom.formNombre.value.trim(),
+        prompt: dom.formPrompt.value.trim(),
+        ejemplos: dom.formEjemplos.value.trim()
+      };
+
+      // Validación
+      if (!data.categoria || !data.nombre || !data.prompt) {
+        toast("Completa al menos Categoría, Nombre y Prompt.", "error");
+        return;
+      }
+
+      const id = dom.formId.value;
+      dom.btnSave.disabled = true;
+      dom.btnSave.textContent = "Guardando…";
+
+      if (id) {
+        // ── Actualizar ─────────────────────
+        data.id = parseInt(id, 10);
+        google.script.run
+          .withSuccessHandler(function (res) {
+            dom.btnSave.disabled = false;
+            if (res.success) {
+              toast("✅ " + res.message, "success");
+              closeFormModal();
+              loadData();
+            } else {
+              toast("❌ " + res.message, "error");
+              dom.btnSave.textContent = "Actualizar";
+            }
+          })
+          .withFailureHandler(function (err) {
+            dom.btnSave.disabled = false;
+            dom.btnSave.textContent = "Actualizar";
+            toast("Error: " + err.message, "error");
+          })
+          .updatePrompt(data);
+      } else {
+        // ── Crear ──────────────────────────
+        google.script.run
+          .withSuccessHandler(function (res) {
+            dom.btnSave.disabled = false;
+            if (res.success) {
+              toast("✅ " + res.message, "success");
+              closeFormModal();
+              loadData();
+            } else {
+              toast("❌ " + res.message, "error");
+              dom.btnSave.textContent = "Guardar";
+            }
+          })
+          .withFailureHandler(function (err) {
+            dom.btnSave.disabled = false;
+            dom.btnSave.textContent = "Guardar";
+            toast("Error: " + err.message, "error");
+          })
+          .addPrompt(data);
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // DELETE — Confirmation Modal
+    // ══════════════════════════════════════════════════════
+
+    function requestDelete(id, name) {
+      deleteTargetId = id;
+      deleteTargetName = name;
+      dom.confirmName.textContent = '"' + name + '"';
+      dom.confirmModal.classList.add("active");
+    }
+
+    function closeConfirmModal() {
+      dom.confirmModal.classList.remove("active");
+      deleteTargetId = null;
+    }
+
+    function confirmDelete() {
+      if (!deleteTargetId) return;
+
+      const btn = $("btnConfirmDelete");
+      btn.disabled = true;
+      btn.textContent = "Eliminando…";
+
+      google.script.run
+        .withSuccessHandler(function (res) {
+          btn.disabled = false;
+          btn.textContent = "Eliminar";
+          if (res.success) {
+            toast("🗑️ " + res.message, "success");
+            closeConfirmModal();
+            loadData();
+          } else {
+            toast("❌ " + res.message, "error");
+          }
+        })
+        .withFailureHandler(function (err) {
+          btn.disabled = false;
+          btn.textContent = "Eliminar";
+          toast("Error: " + err.message, "error");
+        })
+        .deletePrompt(deleteTargetId);
+    }
+
+    // ══════════════════════════════════════════════════════
+    // VIEW — Detail Modal
+    // ══════════════════════════════════════════════════════
+
+    function viewPrompt(id) {
+      const p = allPrompts.find(function (x) { return x.id === id; });
+      if (!p) return;
+
+      dom.viewModalTitle.textContent = p.nombre;
+      dom.viewCategoria.textContent = p.categoria;
+      dom.viewNombre.textContent = p.nombre;
+      dom.viewPrompt.textContent = p.prompt;
+      dom.viewEjemplos.textContent = p.ejemplos || "(sin ejemplos)";
+      dom.btnEditFromView.onclick = function () { editPrompt(id); };
+      dom.viewModal.classList.add("active");
+    }
+
+    function closeViewModal() {
+      dom.viewModal.classList.remove("active");
+    }
+
+    // ══════════════════════════════════════════════════════
+    // TOAST NOTIFICATIONS
+    // ══════════════════════════════════════════════════════
+
+    function toast(message, type) {
+      type = type || "info";
+      const el = document.createElement("div");
+      el.className = "toast " + type;
+      el.textContent = message;
+      dom.toastContainer.appendChild(el);
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 3200);
+    }
+
+    // ══════════════════════════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════════════════════════
+
+    function escHtml(str) {
+      if (!str) return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function escAttr(str) {
+      if (!str) return "";
+      return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    function showLoading(show) {
+      dom.loadingState.style.display = show ? "flex" : "none";
+      if (show) {
+        dom.categoriesPromptsContainer.innerHTML = "";
+        dom.emptyState.style.display = "none";
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // EVENT LISTENERS
+    // ══════════════════════════════════════════════════════
+
+    dom.btnNew.addEventListener("click", openCreateModal);
+
+    // Búsqueda en tiempo real (debounced)
+    let searchTimer;
+    dom.searchInput.addEventListener("input", function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(renderGrid, 250);
+    });
+
+    // Cerrar modales al hacer clic fuera
+    [dom.formModal, dom.confirmModal, dom.viewModal].forEach(function (modal) {
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+          modal.classList.remove("active");
+        }
+      });
+    });
+
+    // Esc para cerrar modales
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeFormModal();
+        closeConfirmModal();
+        closeViewModal();
+      }
+    });
+
+    // ══════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════
+
+    initTheme();
+    loadData();
+  </script>
+</body>
+
+</html>
